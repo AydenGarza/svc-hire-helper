@@ -1,17 +1,56 @@
-from fastapi import FastAPI, Depends
-from supabase import Client
+from fastapi import FastAPI, Depends, HTTPException
 from db import get_db
-from job_application import JobApplication 
+from data_models import CreateApplicationRequest, GetApplicationRequest, UpdateApplicationRequest, ApplicationDatabaseResponse
 
 app = FastAPI()
 
-@app.get("/db_test")
-def get_data(db = Depends(get_db)):
-	response = db.table("applications").select("*").execute()
+@app.post("/api/applications")
+def create_application(request: CreateApplicationRequest, db = Depends(get_db)):
+	print("this happens")
+	response = (db.table("applications").insert(request.model_dump()).execute())
 	return response
 
-@app.post("/create_application")
-def create_application(application: JobApplication, db = Depends(get_db)):
-	print("this happens")
-	response = (db.table("applications").insert(application.model_dump()).execute())
+@app.get("/api/applications")
+def get_application(request: GetApplicationRequest, db=Depends(get_db)) -> ApplicationDatabaseResponse:
+	username = request.username
+	job_title = request.job_title
+	company = request.company
+	
+	response = (db.table("applications").select("*")
+		.eq("username", username)
+		.eq("company", company)
+		.eq("job_title", job_title)
+		.execute()
+	)
+
+	if len(response.data) != 1:
+		raise HTTPException(detail="Application not found", status_code=404)
+
+	application = ApplicationDatabaseResponse(**response.data[0])
+	return application
+	
+@app.put("/api/applications")
+def update_application(request: UpdateApplicationRequest, db=Depends(get_db)):
+	username = request.username
+	job_title = request.job_title
+	company = request.company
+	
+	response = (db.table("applications").select("*")
+		.eq("username", username)
+		.eq("company", company)
+		.eq("job_title", job_title)
+		.execute()
+	)
+
+	if len(response.data) != 1:
+		raise HTTPException(detail="Application not found", status_code=404)
+
+	application_to_update = ApplicationDatabaseResponse.model_validate(response.data[0])
+	id_to_update = application_to_update.id
+
+	if username != application_to_update.username:
+		raise HTTPException(detail="You cannot update the username for an application", status_code=403)
+
+	response = (db.table("applications").update(request.model_dump(exclude_none=True)).eq("id", id_to_update).execute())
+	
 	return response
