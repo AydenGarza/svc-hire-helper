@@ -54,3 +54,26 @@ def update_application(request: UpdateApplicationRequest, db=Depends(get_db)):
 	response = (db.table("applications").update(request.model_dump(exclude_none=True)).eq("id", id_to_update).execute())
 	
 	return response
+
+@app.delete("/api/applications")
+def delete_application(request: GetApplicationRequest, db=Depends(get_db)):
+	username = request.username
+	job_title = request.job_title
+	company = request.company
+	
+	response = (db.table("applications").select("*")
+		.eq("username", username)
+		.eq("company", company)
+		.eq("job_title", job_title)
+		.execute()
+	)
+
+	if len(response.data) != 1:
+		raise HTTPException(detail="Application not found", status_code=404)
+
+	application_to_delete = ApplicationDatabaseResponse.model_validate(response.data[0])
+	id_to_delete = application_to_delete.id
+	
+	response = (db.table("applications").delete().eq("id", id_to_delete).execute())
+	
+	return response	
