@@ -27,3 +27,7 @@ class ApplicationDatabaseResponse(BaseModel):
 	application_status:str
 	username:str
 	id: int
+
+class LoginRequest(BaseModel):
+	email: str
+	password:str

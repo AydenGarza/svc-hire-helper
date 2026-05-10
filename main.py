@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException
 from db import get_db
-from data_models import CreateApplicationRequest, GetApplicationRequest, UpdateApplicationRequest, ApplicationDatabaseResponse
+from data_models import CreateApplicationRequest, GetApplicationRequest, UpdateApplicationRequest, ApplicationDatabaseResponse, LoginRequest
+import supabase
 
 app = FastAPI()
 
@@ -77,3 +78,7 @@ def delete_application(request: GetApplicationRequest, db=Depends(get_db)):
 	response = (db.table("applications").delete().eq("id", id_to_delete).execute())
 	
 	return response	
+
+@app.post("/login")
+def login(request: LoginRequest, db=Depends(get_db)):
+	raise HTTPException(detail="Auth isn't implemented yet :(", status_code=500)
