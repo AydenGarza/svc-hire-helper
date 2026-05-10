@@ -10,7 +10,7 @@ SUPABASE_KEY = os.getenv("SUPABASE_SECRET")
 if not SUPABASE_KEY or not SUPABASE_URL:
 	raise Exception("Supabase credentials were not loaded from environment")
 
-db: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-def get_db() -> Client:
-	return db
+def get_supabase_client() -> Client:
+	return supabase
