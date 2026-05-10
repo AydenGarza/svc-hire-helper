@@ -1,9 +1,17 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Header
+from fastapi.middleware.cors import CORSMiddleware
 from supabase_client import get_supabase_client
 from supabase import AuthApiError
 from data_models import CreateApplicationRequest, GetApplicationRequest, UpdateApplicationRequest, ApplicationDatabaseResponse, LoginRequest, RegisterRequest, AuthInfo
 
 app = FastAPI()
+
+app.add_middleware(
+	CORSMiddleware,
+	allow_origins=["http://localhost:3000"],
+	allow_methods=["*"],
+	allow_headers=["*"],
+)
 
 @app.post("/api/applications")
 def create_application(request: CreateApplicationRequest, supabase=Depends(get_supabase_client)):
@@ -81,8 +89,18 @@ def delete_application(request: GetApplicationRequest, supabase=Depends(get_supa
 
 @app.post("/accounts/register")
 def register_account(request: RegisterRequest, supabase=Depends(get_supabase_client)):
-	response = (supabase.auth.sign_up(request.model_dump()))
-	return response
+	try:
+		response = (supabase.auth.sign_up(request.model_dump()))
+	except AuthApiError as e:
+		raise HTTPException(detail=e.message, status_code=400)
+		
+	auth_info = AuthInfo.model_validate(
+		{
+			"access_token": response.session.access_token,
+			"refresh_token": response.session.refresh_token
+		}
+	)
+	return auth_info
 
 @app.post("/accounts/login")
 def login(request: LoginRequest, supabase=Depends(get_supabase_client)) -> AuthInfo:
