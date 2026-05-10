@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException
 from supabase_client import get_supabase_client
-from data_models import CreateApplicationRequest, GetApplicationRequest, UpdateApplicationRequest, ApplicationDatabaseResponse, LoginRequest, RegisterRequest
+from supabase import AuthApiError
+from data_models import CreateApplicationRequest, GetApplicationRequest, UpdateApplicationRequest, ApplicationDatabaseResponse, LoginRequest, RegisterRequest, AuthInfo
 
 app = FastAPI()
 
@@ -83,3 +84,17 @@ def register_account(request: RegisterRequest, supabase=Depends(get_supabase_cli
 	response = (supabase.auth.sign_up(request.model_dump()))
 	return response
 
+@app.post("/accounts/login")
+def login(request: LoginRequest, supabase=Depends(get_supabase_client)) -> AuthInfo:
+	try:
+		response = (supabase.auth.sign_in_with_password(request.model_dump()))
+	except AuthApiError as e:
+		raise HTTPException(detail=e.message, status_code=400)
+	
+	auth_info = AuthInfo.model_validate(
+		{
+			"access_token": response.session.access_token,
+			"refresh_token": response.session.refresh_token
+		}
+	)
+	return auth_info
