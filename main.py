@@ -78,7 +78,8 @@ def delete_application(request: GetApplicationRequest, supabase=Depends(get_supa
 	
 	return response	
 
-@app.post("accounts/register")
+@app.post("/accounts/register")
 def register_account(request: RegisterRequest, supabase=Depends(get_supabase_client)):
 	response = (supabase.auth.sign_up(request.model_dump()))
 	return response
+
