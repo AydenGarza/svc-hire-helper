@@ -15,13 +15,27 @@ app.add_middleware(
 
 @app.post("/api/applications")
 def create_application(request: CreateApplicationRequest, authorization: str = Header(...), supabase=Depends(get_supabase_client)):
-	print("this happens")
-	response = (supabase.table("applications").insert(request.model_dump()).execute())
+	try:
+		token = authorization.replace("Bearer ", "")
+		user = supabase.auth.get_user(token)
+		email = user.user.email
+	except AuthApiError as e:
+		raise HTTPException(detail=e.message, status_code=403)
+	application_dict = request.model_dump()
+	application_dict['email'] = email
+	
+	response = (supabase.table("applications").insert(application_dict).execute())
 	return response
 
 @app.get("/api/applications")
 def get_application(request: GetApplicationRequest, authorization: str = Header(...),supabase=Depends(get_supabase_client)) -> ApplicationDatabaseResponse:
-	email = None
+	try:
+		token = authorization.replace("Bearer ", "")
+		user = supabase.auth.get_user(token)
+		email = user.user.email
+	except AuthApiError as e:
+		raise HTTPException(detail=e.message, status_code=403)
+
 	job_title = request.job_title
 	company = request.company
 	
@@ -40,7 +54,13 @@ def get_application(request: GetApplicationRequest, authorization: str = Header(
 	
 @app.put("/api/applications")
 def update_application(request: UpdateApplicationRequest, authorization: str = Header(...) , supabase=Depends(get_supabase_client)):
-	email = None
+	try:
+		token = authorization.replace("Bearer ", "")
+		user = supabase.auth.get_user(token)
+		email = user.user.email
+	except AuthApiError as e:
+		raise HTTPException(detail=e.message, status_code=403)
+	
 	job_title = request.job_title
 	company = request.company
 	
@@ -66,7 +86,13 @@ def update_application(request: UpdateApplicationRequest, authorization: str = H
 
 @app.delete("/api/applications")
 def delete_application(request: GetApplicationRequest, authorization: str = Header(...), supabase=Depends(get_supabase_client)):
-	email = None
+	try:
+		token = authorization.replace("Bearer ", "")
+		user = supabase.auth.get_user(token)
+		email = user.user.email
+	except AuthApiError as e:
+		raise HTTPException(detail=e.message, status_code=403)
+		
 	job_title = request.job_title
 	company = request.company
 	
