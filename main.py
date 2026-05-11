@@ -71,14 +71,15 @@ def update_application(request: UpdateApplicationRequest, authorization: str = H
 		email = user.user.email
 	except AuthApiError as e:
 		raise HTTPException(detail=e.message, status_code=403)
+
 	
-	job_title = request.job_title
-	company = request.company
+	old_job_title = request.old_company_identifiers.job_title
+	old_company = request.old_company_identifiers.company
 	
 	response = (supabase.table("applications").select("*")
 		.eq("email", email)
-		.eq("company", company)
-		.eq("job_title", job_title)
+		.eq("company", old_job_title)
+		.eq("job_title", old_company)
 		.execute()
 	)
 
@@ -88,7 +89,7 @@ def update_application(request: UpdateApplicationRequest, authorization: str = H
 	application_to_update = ApplicationDatabaseResponse.model_validate(response.data[0])
 	id_to_update = application_to_update.id
 
-	response = (supabase.table("applications").update(request.model_dump(exclude_none=True)).eq("id", id_to_update).execute())
+	response = (supabase.table("applications").update(request.updates.model_dump(exclude_none=True)).eq("id", id_to_update).execute())
 	
 	return response
 

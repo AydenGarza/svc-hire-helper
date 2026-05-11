@@ -11,11 +11,15 @@ class GetApplicationRequest(BaseModel):
 	company: str
 	job_title: str
 
+class ApplicationUpdateFields(BaseModel):
+	new_company: Optional[str] = None
+	new_job_title:Optional[str] = None
+	new_date_applied:Optional[str] = None
+	new_application_status:Optional[str] = None
+
 class UpdateApplicationRequest(BaseModel):
-	company: str
-	job_title:str
-	date_applied:Optional[str] = None
-	application_status:Optional[str] = None
+	old_company_identifiers: GetApplicationRequest
+	updates: ApplicationUpdateFields
 
 class ApplicationDatabaseResponse(BaseModel):
 	company: str
