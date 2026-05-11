@@ -78,8 +78,8 @@ def update_application(request: UpdateApplicationRequest, authorization: str = H
 	
 	response = (supabase.table("applications").select("*")
 		.eq("email", email)
-		.eq("company", old_job_title)
-		.eq("job_title", old_company)
+		.eq("company", old_company)
+		.eq("job_title", old_job_title)
 		.execute()
 	)
 
@@ -89,9 +89,19 @@ def update_application(request: UpdateApplicationRequest, authorization: str = H
 	application_to_update = ApplicationDatabaseResponse.model_validate(response.data[0])
 	id_to_update = application_to_update.id
 
-	response = (supabase.table("applications").update(request.updates.model_dump(exclude_none=True)).eq("id", id_to_update).execute())
+	raw_updates = request.model_dump()['updates']
+	updates = {}
+	for u in raw_updates:
+		if raw_updates[u]:
+			updates[u] = raw_updates[u]
 	
-	return response
+	response = (supabase.table("applications").update(updates).eq("id", id_to_update).execute())
+
+	updated_application = ApplicationDatabaseResponse.model_validate((supabase.table("applications").select("*").eq("id", id_to_update).execute()).data[0])
+	return {
+		"old": application_to_update,
+		"new": updated_application
+	}
 
 @app.delete("/api/applications")
 def delete_application(request: GetApplicationRequest, authorization: str = Header(...), supabase=Depends(get_supabase_client)):
