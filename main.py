@@ -38,6 +38,22 @@ def create_application(request: CreateApplicationRequest, authorization: str = H
 	response = (supabase.table("applications").insert(application_dict).execute())
 	return response
 
+@app.get("/api/all_applications")
+def get_all_applications(authorization: str = Header(...),supabase=Depends(get_supabase_client)):
+	try:
+		token = authorization.replace("Bearer ", "")
+		user = supabase.auth.get_user(token)
+		email = user.user.email
+	except AuthApiError as e:
+		raise HTTPException(detail=e.message, status_code=403)
+
+	response = (supabase.table("applications").select("*")
+		.eq("email", email)
+		.execute()
+	)
+
+	return response.data
+
 @app.get("/api/applications")
 def get_application(request: GetApplicationRequest, authorization: str = Header(...),supabase=Depends(get_supabase_client)) -> ApplicationDatabaseResponse:
 	try:
