@@ -1,3 +1,4 @@
+from re import search
 from fastapi import FastAPI, Depends, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
 from supabase_client import get_supabase_client
@@ -24,6 +25,16 @@ def create_application(request: CreateApplicationRequest, authorization: str = H
 	application_dict = request.model_dump()
 	application_dict['email'] = email
 	
+	search_response = (supabase.table("applications").select("*")
+		.eq("email", email)
+		.eq("company", request.company)
+		.eq("job_title", request.job_title)
+		.execute()
+	)
+
+	if len(search_response.data) > 0:
+		raise HTTPException(detail="Application already exists", status_code=404)
+		
 	response = (supabase.table("applications").insert(application_dict).execute())
 	return response
 
