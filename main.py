@@ -21,12 +21,12 @@ def create_application(request: CreateApplicationRequest, supabase=Depends(get_s
 
 @app.get("/api/applications")
 def get_application(request: GetApplicationRequest, supabase=Depends(get_supabase_client)) -> ApplicationDatabaseResponse:
-	username = None
+	email = None
 	job_title = request.job_title
 	company = request.company
 	
 	response = (supabase.table("applications").select("*")
-		.eq("username", username)
+		.eq("email", email)
 		.eq("company", company)
 		.eq("job_title", job_title)
 		.execute()
@@ -40,12 +40,12 @@ def get_application(request: GetApplicationRequest, supabase=Depends(get_supabas
 	
 @app.put("/api/applications")
 def update_application(request: UpdateApplicationRequest, supabase=Depends(get_supabase_client)):
-	username = None
+	email = None
 	job_title = request.job_title
 	company = request.company
 	
 	response = (supabase.table("applications").select("*")
-		.eq("username", username)
+		.eq("email", email)
 		.eq("company", company)
 		.eq("job_title", job_title)
 		.execute()
@@ -57,8 +57,8 @@ def update_application(request: UpdateApplicationRequest, supabase=Depends(get_s
 	application_to_update = ApplicationDatabaseResponse.model_validate(response.data[0])
 	id_to_update = application_to_update.id
 
-	if username != application_to_update.username:
-		raise HTTPException(detail="You cannot update the username for an application", status_code=403)
+	if email != application_to_update.email:
+		raise HTTPException(detail="You cannot update the email for an application", status_code=403)
 
 	response = (supabase.table("applications").update(request.model_dump(exclude_none=True)).eq("id", id_to_update).execute())
 	
@@ -66,12 +66,12 @@ def update_application(request: UpdateApplicationRequest, supabase=Depends(get_s
 
 @app.delete("/api/applications")
 def delete_application(request: GetApplicationRequest, supabase=Depends(get_supabase_client)):
-	username = request.username
+	email = None
 	job_title = request.job_title
 	company = request.company
 	
 	response = (supabase.table("applications").select("*")
-		.eq("username", username)
+		.eq("email", email)
 		.eq("company", company)
 		.eq("job_title", job_title)
 		.execute()
