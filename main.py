@@ -77,9 +77,6 @@ def update_application(request: UpdateApplicationRequest, authorization: str = H
 	application_to_update = ApplicationDatabaseResponse.model_validate(response.data[0])
 	id_to_update = application_to_update.id
 
-	if email != application_to_update.email:
-		raise HTTPException(detail="You cannot update the email for an application", status_code=403)
-
 	response = (supabase.table("applications").update(request.model_dump(exclude_none=True)).eq("id", id_to_update).execute())
 	
 	return response
