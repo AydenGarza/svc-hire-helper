@@ -14,13 +14,13 @@ app.add_middleware(
 )
 
 @app.post("/api/applications")
-def create_application(request: CreateApplicationRequest, supabase=Depends(get_supabase_client)):
+def create_application(request: CreateApplicationRequest, authorization: str = Header(...), supabase=Depends(get_supabase_client)):
 	print("this happens")
 	response = (supabase.table("applications").insert(request.model_dump()).execute())
 	return response
 
 @app.get("/api/applications")
-def get_application(request: GetApplicationRequest, supabase=Depends(get_supabase_client)) -> ApplicationDatabaseResponse:
+def get_application(request: GetApplicationRequest, authorization: str = Header(...),supabase=Depends(get_supabase_client)) -> ApplicationDatabaseResponse:
 	email = None
 	job_title = request.job_title
 	company = request.company
@@ -39,7 +39,7 @@ def get_application(request: GetApplicationRequest, supabase=Depends(get_supabas
 	return application
 	
 @app.put("/api/applications")
-def update_application(request: UpdateApplicationRequest, supabase=Depends(get_supabase_client)):
+def update_application(request: UpdateApplicationRequest, authorization: str = Header(...) , supabase=Depends(get_supabase_client)):
 	email = None
 	job_title = request.job_title
 	company = request.company
@@ -65,7 +65,7 @@ def update_application(request: UpdateApplicationRequest, supabase=Depends(get_s
 	return response
 
 @app.delete("/api/applications")
-def delete_application(request: GetApplicationRequest, supabase=Depends(get_supabase_client)):
+def delete_application(request: GetApplicationRequest, authorization: str = Header(...), supabase=Depends(get_supabase_client)):
 	email = None
 	job_title = request.job_title
 	company = request.company
