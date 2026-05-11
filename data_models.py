@@ -6,26 +6,27 @@ class CreateApplicationRequest(BaseModel):
 	job_title:str
 	date_applied:str
 	application_status:str
-	username:str
 
 class GetApplicationRequest(BaseModel):
 	company: str
 	job_title: str
-	username: str
 
-class UpdateApplicationRequest(BaseModel):
-	company: str
-	job_title:str
+class ApplicationUpdateFields(BaseModel):
+	company: Optional[str] = None
+	job_title:Optional[str] = None
 	date_applied:Optional[str] = None
 	application_status:Optional[str] = None
-	username:str
+
+class UpdateApplicationRequest(BaseModel):
+	old_company_identifiers: GetApplicationRequest
+	updates: ApplicationUpdateFields
 
 class ApplicationDatabaseResponse(BaseModel):
 	company: str
 	job_title:str
 	date_applied:str
 	application_status:str
-	username:str
+	email:str
 	id: int
 
 class LoginRequest(BaseModel):
