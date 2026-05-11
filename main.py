@@ -21,7 +21,7 @@ def create_application(request: CreateApplicationRequest, supabase=Depends(get_s
 
 @app.get("/api/applications")
 def get_application(request: GetApplicationRequest, supabase=Depends(get_supabase_client)) -> ApplicationDatabaseResponse:
-	username = request.username
+	username = None
 	job_title = request.job_title
 	company = request.company
 	
@@ -40,7 +40,7 @@ def get_application(request: GetApplicationRequest, supabase=Depends(get_supabas
 	
 @app.put("/api/applications")
 def update_application(request: UpdateApplicationRequest, supabase=Depends(get_supabase_client)):
-	username = request.username
+	username = None
 	job_title = request.job_title
 	company = request.company
 	
